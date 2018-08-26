@@ -15,7 +15,7 @@ from scrapy.selector import HtmlXPathSelector, Selector
 from scrapy01.items import Scrapy01Item
 
 FILES_STORE = './scrapy01/aaai2018'
-socket.setdefaulttimeout(5)
+socket.setdefaulttimeout(10)
 
 
 def get_exist_files(filepath):
@@ -109,7 +109,7 @@ class AAAIScrapy(scrapy.Spider):
 
             # print('==================  save paper as pdf file  ========================')
             try:
-                paper_response = request.urlopen(paper_url, timeout=10)
+                paper_response = request.urlopen(paper_url, timeout=30)
                 paper_response = HtmlResponse(url=paper_url, body=paper_response.read(), encoding='utf-8')
                 paper_url = Selector(response=paper_response)\
                     .xpath('/html/body/div/div/div/div[@id="content"]/p/a[3]/@href').extract()[0]
