@@ -64,18 +64,25 @@ class ICLRScrapy(scrapy.Spider):
         for section in all_section:
             section_type = section.xpath('div/div[1]/text()').extract()[0]
             paper_title = paper_title_preprocessing(section.xpath('div/div[3]/text()').extract()[0])
-            paper_author = section.xpath('div/div[5]/text()').extract()[0].split(' · ')[0]
+            paper_author = section.xpath('div/div[5]/text()').extract()
             relative_url = section.xpath('div/div[6]/a/span/a/@href').extract()
             if len(relative_url) == 0:
-                print('----------------  no paper, Type: %s, Title: %s  ----------------' % (section_type, paper_title))
+                print('--------  no paper url, Type: %s, Title: %s  ---------' % (section_type, paper_title))
                 continue
+
+            if len(paper_author) == 0:
+                print('--------  no paper author, Type: %s, Title: %s  ---------' % (section_type, paper_title))
+                continue
+
             paper_id = relative_url[0].split('=')[-1]
             paper_url = self.get_url(relative_url[0])
 
             if paper_id in exist_file:
+                print('\t' + paper_id)
                 continue
 
-            filename = 'I-' + paper_id + '_ICLR2018_' + paper_author + '_' + paper_title + '.pdf'
+            filename = 'I-' + paper_id + '_ICLR2018_' \
+                       + paper_author[0].split(' · ')[0] + '_' + paper_title + '.pdf'
             path = os.path.join(FILES_STORE, section_type)
             if os.path.exists(path) is False:
                 os.mkdir(path)
