@@ -1,17 +1,19 @@
 # -*- coding:utf-8 -*-
 import os
+import socket
 from urllib import request
 
 import scrapy
-from scrapy01.settings import FILES_STORE
-from scrapy01.items import Scrapy01Item
+
+socket.setdefaulttimeout(30)
+FILES_STORE = './scrapy01/acl2018'
 
 
 def get_exist_files(filepath):
     listdir = os.listdir(filepath)
     exist_files = []
     for name in listdir:
-        number = name.split('ACL')[0].split('-')[-1]
+        number = name.split('ACL2018')[0].split('-')[-1]
         exist_files.append(number)
     return exist_files
 
@@ -31,7 +33,6 @@ class ACLScrapy(scrapy.Spider):
         # print(all_p)
         filters = '\\/:*?"<>|\n'
         exist_file = get_exist_files(FILES_STORE)
-        item = Scrapy01Item()
         for p in all_p:
 
             paper_url = p.xpath('a[re:test(@href, "http://aclweb.org/anthology/P[0-9]+-[0-9]+")]/@href').extract()[0]
@@ -47,16 +48,14 @@ class ACLScrapy(scrapy.Spider):
                 if x in paper_title:
                     paper_title = paper_title.replace(x, ' ')
 
-            item['url'] = [paper_url]
-            item['number'] = [paper_number]
-            item['author'] = [paper_first_author]
-            item['title'] = [paper_title]
-
-            filename = item['number'][0] + 'ACL2018_' + item['author'][0] + '_' + item['title'][0] + '.pdf'
+            filename = paper_number + 'ACL2018_' + paper_first_author + '_' + paper_title + '.pdf'
             filepath = os.path.join(FILES_STORE, filename)
-            request.urlretrieve(paper_url, filepath)
-            # yield item
-            print(paper_number, paper_url)
+            try:
+                request.urlretrieve(paper_url, filepath)
+                print(paper_number, paper_url, paper_title)
+            except socket.timeout:
+                print('---------  url time out: %s  ---------  skip  -------' % paper_url)
+
 
 
 

@@ -9,6 +9,7 @@ from urllib import request
 
 import scrapy
 from click import pause
+from urllib.error import HTTPError
 from scrapy import Request
 from scrapy.http import HtmlResponse
 from scrapy.selector import HtmlXPathSelector, Selector
@@ -26,7 +27,7 @@ def get_exist_files(filepath):
         if os.path.isdir(os.path.join(filepath, name)):
             exist_files += get_exist_files(os.path.join(filepath, name))
         else:
-            number = name.split('_')[0].split('-')[-1]
+            number = name.split('_ICLR2018_')[0][2:]
             exist_files.append(number)
     return exist_files
 
@@ -66,6 +67,7 @@ class ICLRScrapy(scrapy.Spider):
             paper_title = paper_title_preprocessing(section.xpath('div/div[3]/text()').extract()[0])
             paper_author = section.xpath('div/div[5]/text()').extract()
             relative_url = section.xpath('div/div[6]/a/span/a/@href').extract()
+
             if len(relative_url) == 0:
                 print('--------  no paper url, Type: %s, Title: %s  ---------' % (section_type, paper_title))
                 continue
@@ -75,7 +77,11 @@ class ICLRScrapy(scrapy.Spider):
                 continue
 
             paper_id = relative_url[0].split('=')[-1]
-            paper_url = self.get_url(relative_url[0])
+            try:
+                paper_url = self.get_url(relative_url[0])
+            except HTTPError as hte:
+                print('-------', hte.info(), relative_url, '--------')
+                continue
 
             if paper_id in exist_file:
                 print('\t' + paper_id)
@@ -91,7 +97,7 @@ class ICLRScrapy(scrapy.Spider):
             # print('==================  save paper as pdf file  ========================')
             try:
                 request.urlretrieve(paper_url, filepath)
-                print(paper_id, paper_title)
+                print(section_type, paper_id, paper_url, paper_title)
             except socket.timeout:
                 print('-----------  paper%s time out  -------------  skip  -----' % paper_number)
             # print('==================  save successfully  ========================')

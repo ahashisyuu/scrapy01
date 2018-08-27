@@ -2,6 +2,7 @@
 import os
 import re
 import socket
+from urllib.error import URLError
 
 from bs4 import BeautifulSoup
 from urllib import request
@@ -15,7 +16,7 @@ from scrapy.selector import HtmlXPathSelector, Selector
 from scrapy01.items import Scrapy01Item
 
 FILES_STORE = './scrapy01/aaai2018'
-socket.setdefaulttimeout(10)
+socket.setdefaulttimeout(30)
 
 
 def get_exist_files(filepath):
@@ -91,8 +92,14 @@ class AAAIScrapy(scrapy.Spider):
                 paper_url = h4_paper.xpath('tr[1]/td[2]/a/@href').extract()[0]
 
                 self.paper_author = h4_paper.xpath('tr[2]/td[1]/text()').extract()[0].split(',')[0].strip()
-
-                html = request.urlopen(paper_url, timeout=10)
+                try:
+                    html = request.urlopen(paper_url, timeout=30)
+                except URLError:
+                    print('---------  url error: %s  ---------' % paper_url)
+                    continue
+                except socket.timeout:
+                    print('---------  url time out: %s  ---------  skip  -------' % paper_url)
+                    continue
                 h4_response = HtmlResponse(url=paper_url, body=html.read(), encoding='utf-8')
                 paper_response = Selector(response=h4_response)
                 self.parse_v2(paper_response)
@@ -117,6 +124,8 @@ class AAAIScrapy(scrapy.Spider):
                 print(paper_number, paper_title)
             except socket.timeout:
                 print('-----------  paper%s time out  -------------  skip  -----' % paper_number)
+            except URLError:
+                print('-----------  url error: %s  -----------  skip  -----' % paper_url)
             # print('==================  save successfully  ========================')
         else:
             print('\t' + paper_number)
