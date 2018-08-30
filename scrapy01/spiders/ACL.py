@@ -2,6 +2,7 @@
 import os
 import socket
 from urllib import request
+from urllib.error import URLError
 
 import scrapy
 
@@ -55,6 +56,9 @@ class ACLScrapy(scrapy.Spider):
                 print(paper_number, paper_url, paper_title)
             except socket.timeout:
                 print('---------  url time out: %s  ---------  skip  -------' % paper_url)
+            except URLError:
+                print('-----------  url error: %s  -----------  skip  -----' % paper_url)
+
 
 
 
