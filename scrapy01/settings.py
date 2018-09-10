@@ -70,7 +70,7 @@ ITEM_PIPELINES = {
    'scrapy01.pipelines.Scrapy01Pipeline': 3,
 }
 
-FILES_STORE = './scrapy01/coling'
+FILES_STORE = './scrapy01/coling2016'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html

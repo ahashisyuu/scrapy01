@@ -6,7 +6,9 @@ import scrapy
 # from scrapy01.settings import FILES_STORE
 from scrapy01.items import Scrapy01Item
 
-FILES_STORE = './scrapy01/semeval2018'
+YEAR = '2015'
+FILES_STORE = './scrapy01/semeval' + YEAR
+
 
 def get_exist_files(filepath):
     listdir = os.listdir(filepath)
@@ -20,7 +22,7 @@ def get_exist_files(filepath):
 class SemevalScrapy(scrapy.Spider):
     name = "Semeval"
     allowed_domains = ["aclweb.org"]
-    start_urls = ["https://aclanthology.coli.uni-saarland.de/events/semeval-2018"]
+    start_urls = ["https://aclanthology.coli.uni-saarland.de/events/semeval-" + YEAR]
 
     def parse(self, response):
 
@@ -35,7 +37,7 @@ class SemevalScrapy(scrapy.Spider):
         item = Scrapy01Item()
         for p in all_p:
 
-            paper_url = p.xpath('a[re:test(@href, "http://aclweb.org/anthology/S[0-9]+-[0-9]+")]/@href').extract()[0]
+            paper_url = p.xpath('a[re:test(@href, "http://www.aclweb.org/anthology/S[0-9]+-[0-9]+")]/@href').extract()[0]
             paper_number = paper_url.split('/')[-1]
             paper_title = p.xpath('strong/a/text()').extract()[0]
             paper_first_author = p.xpath('a[re:test(@href, "/people/[a-z\-]+")]/text()').extract()[0]
@@ -62,7 +64,8 @@ class SemevalScrapy(scrapy.Spider):
             item['author'] = [paper_first_author]
             item['title'] = [paper_title]
 
-            filename = item['number'][0] + 'SemEval2018_' + item['author'][0] + '_' + item['title'][0] + '.pdf'
+            filename = item['number'][0] + 'SemEval' + YEAR + '_' + \
+                       item['author'][0] + '_' + item['title'][0] + '.pdf'
             filepath = os.path.join(FILES_STORE, filename)
             request.urlretrieve(paper_url, filepath)
             # yield item

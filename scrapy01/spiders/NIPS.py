@@ -15,8 +15,7 @@ from scrapy.selector import HtmlXPathSelector, Selector
 
 from scrapy01.items import Scrapy01Item
 
-YEAR = '2016'
-FILES_STORE = './scrapy01/aaai' + YEAR
+FILES_STORE = './scrapy01/nips2018'
 socket.setdefaulttimeout(30)
 
 
@@ -27,7 +26,7 @@ def get_exist_files(filepath):
         if os.path.isdir(os.path.join(filepath, name)):
             exist_files += get_exist_files(os.path.join(filepath, name))
         else:
-            number = name.split('AAAI')[0].split('-')[-1]
+            number = name.split('NIPS')[0].split('-')[-1]
             exist_files.append(number)
     return exist_files
 
@@ -43,13 +42,13 @@ def paper_title_preprocessing(paper_title, filters='\\/:*?"<>|\n'):
             paper_title = paper_title.replace(x, ' ')
     if len(paper_title) > 120:
         paper_title = paper_title[:121]
-    return paper_title.strip()
+    return paper_title
 
 
 class AAAIScrapy(scrapy.Spider):
-    name = "AAAI"
-    allowed_domains = ["aaai.org"]
-    start_urls = ["https://www.aaai.org/ocs/index.php/AAAI/AAAI" + YEAR[-2:] + "/schedConf/presentations/"]
+    name = "NIPS"
+    allowed_domains = ["nips.org"]
+    start_urls = ["https://www.nips.org/ocs/index.php/AAAI/AAAI18/schedConf/presentations/"]
     paper_title = None
     paper_author = None
     exist_file = None
@@ -111,7 +110,7 @@ class AAAIScrapy(scrapy.Spider):
         paper_url = response.xpath('/html/frameset/frame[1]/@src').extract()[0]
         paper_number = paper_url.split('/')[-1]
         if paper_number not in self.exist_file:
-            filename = 'A' + YEAR[-2:] + '-' + paper_number + 'AAAI' + YEAR + '_' + paper_author + '_' \
+            filename = 'A18-' + paper_number + 'AAAI2018' + '_' + paper_author + '_' \
                        + paper_title + '.pdf'
             filepath = os.path.join(self.path, filename)
 
@@ -127,9 +126,6 @@ class AAAIScrapy(scrapy.Spider):
                 print('-----------  paper%s time out  -------------  skip  -----' % paper_number)
             except URLError:
                 print('-----------  url error: %s  -----------  skip  -----' % paper_url)
-            except FileNotFoundError:
-                print('-----------  notFoundError: URL: %s, '
-                      'filepath: %s  -------------------' % (paper_url, filepath))
             # print('==================  save successfully  ========================')
         else:
             print('\t' + paper_number)

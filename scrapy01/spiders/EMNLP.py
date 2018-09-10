@@ -1,25 +1,30 @@
 # -*- coding:utf-8 -*-
 import os
+import socket
 from urllib import request
+from urllib.error import URLError
 
 import scrapy
-from scrapy01.settings import FILES_STORE
-from scrapy01.items import Scrapy01Item
+
+socket.setdefaulttimeout(30)
+
+YEAR = '2017'
+FILES_STORE = './scrapy01/emnlp' + YEAR
 
 
 def get_exist_files(filepath):
     listdir = os.listdir(filepath)
     exist_files = []
     for name in listdir:
-        number = name.split('COLING')[0].split('-')[-1]
+        number = name.split('EMNLP' + YEAR)[0].split('-')[-1]
         exist_files.append(number)
     return exist_files
 
 
-class COLINGScrapy(scrapy.Spider):
-    name = "COLING"
+class ACLScrapy(scrapy.Spider):
+    name = "EMNLP"
     allowed_domains = ["aclweb.org"]
-    start_urls = ["https://aclanthology.coli.uni-saarland.de/events/coling-2016"]
+    start_urls = ["https://aclanthology.coli.uni-saarland.de/events/emnlp-" + YEAR]
 
     def parse(self, response):
 
@@ -31,10 +36,9 @@ class COLINGScrapy(scrapy.Spider):
         # print(all_p)
         filters = '\\/:*?"<>|\n'
         exist_file = get_exist_files(FILES_STORE)
-        item = Scrapy01Item()
         for p in all_p:
 
-            paper_url = p.xpath('a[re:test(@href, "http://aclweb.org/anthology/C[0-9]+-[0-9]+")]/@href').extract()[0]
+            paper_url = p.xpath('a[re:test(@href, "http://[a-z]*.?aclweb.org/anthology/D[0-9]+-[0-9]+")]/@href').extract()[0]
             paper_number = paper_url.split('/')[-1]
             paper_title = p.xpath('strong/a/text()').extract()[0]
             paper_first_author = p.xpath('a[re:test(@href, "/people/[a-z\-]+")]/text()').extract()[0]
@@ -47,19 +51,27 @@ class COLINGScrapy(scrapy.Spider):
                 if x in paper_title:
                     paper_title = paper_title.replace(x, ' ')
 
-            space_list = ['       ', '      ', '     ', '    ', '   ', '  ']
-            for x in space_list:
-                if x in paper_title:
-                    paper_title = paper_title.replace(x, ' ')
-            if len(paper_title) > 100:
-                paper_title = paper_title[:101]
-            item['url'] = [paper_url]
-            item['number'] = [paper_number]
-            item['author'] = [paper_first_author]
-            item['title'] = [paper_title]
-
-            filename = item['number'][0] + 'COLING2016_' + item['author'][0] + '_' + item['title'][0] + '.pdf'
+            filename = paper_number + 'EMNLP' + YEAR + '_' + \
+                paper_first_author + '_' + paper_title.strip() + '.pdf'
             filepath = os.path.join(FILES_STORE, filename)
-            request.urlretrieve(paper_url, filepath)
-            # yield item
-            print(paper_number, paper_url)
+            try:
+                request.urlretrieve(paper_url, filepath)
+                print(paper_number, paper_url, paper_title)
+            except socket.timeout:
+                print('---------  url time out: %s  ---------  skip  -------' % paper_url)
+            except URLError:
+                print('-----------  url error: %s  -----------  skip  -----' % paper_url)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
