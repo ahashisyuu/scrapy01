@@ -14,7 +14,8 @@ from selenium.common.exceptions import TimeoutException
 from ..middlewares import RotateUserAgentMiddleware
 from urllib import request
 
-FILES_STORE = './scrapy01/sigir2018'
+YEAR = '2017'
+FILES_STORE = './scrapy01/sigir' + YEAR
 socket.setdefaulttimeout(90)
 
 
@@ -25,7 +26,7 @@ def get_exist_files(filepath):
         if os.path.isdir(os.path.join(filepath, name)):
             exist_files += get_exist_files(os.path.join(filepath, name))
         else:
-            number = name.split('SIGIR2018')[0]
+            number = name.split('SIGIR' + YEAR)[0]
             exist_files.append(number)
     return exist_files
 
@@ -55,7 +56,7 @@ def paper_section_path(section_title):
 class SIGIRScrapy(scrapy.Spider):
     name = "SIGIR"
     allowed_domains = ["sigir.org"]
-    start_urls = ["https://sigir.org/sigir2018/toc.html"]
+    start_urls = ["https://sigir.org/sigir" + YEAR + "/toc.html"]
     START_LOCATION = 'C:/Users/ahashi_syuu/AppData/Local/Google/Chrome/Application/'
     driver = None
 
@@ -131,7 +132,7 @@ class SIGIRScrapy(scrapy.Spider):
                     req = request.Request(paper_url, headers=headers)
                     pdf_data = request.urlopen(req, timeout=30).read()
 
-                    filename = paper_number + 'SIGIR2018_' + paper_author + '_' + paper_title + '.pdf'
+                    filename = paper_number + 'SIGIR' + YEAR + '_' + paper_author + '_' + paper_title + '.pdf'
                     with open(os.path.join(section_path, filename), 'wb') as fw:
                         fw.write(pdf_data)
                     print(paper_number, paper_author, paper_title)

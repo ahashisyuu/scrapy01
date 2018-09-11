@@ -16,7 +16,8 @@ from scrapy.selector import HtmlXPathSelector, Selector
 
 from scrapy01.items import Scrapy01Item
 
-FILES_STORE = './scrapy01/iclr2018'
+YEAR = '2018'
+FILES_STORE = './scrapy01/iclr' + YEAR
 socket.setdefaulttimeout(5)
 
 
@@ -27,7 +28,7 @@ def get_exist_files(filepath):
         if os.path.isdir(os.path.join(filepath, name)):
             exist_files += get_exist_files(os.path.join(filepath, name))
         else:
-            number = name.split('_ICLR2018_')[0][2:]
+            number = name.split('_ICLR' + YEAR + '_')[0][2:]
             exist_files.append(number)
     return exist_files
 
@@ -49,7 +50,7 @@ def paper_title_preprocessing(paper_title, filters='\\/:*?"<>|\n'):
 class ICLRScrapy(scrapy.Spider):
     name = "ICLR"
     allowed_domains = ["iclr.cc"]
-    start_urls = ["https://iclr.cc/Conferences/2018/Schedule"]
+    start_urls = ["https://iclr.cc/Conferences/" + YEAR + "/Schedule"]
     paper_title = None
     paper_author = None
     exist_file = None
@@ -87,7 +88,7 @@ class ICLRScrapy(scrapy.Spider):
                 print('\t' + paper_id)
                 continue
 
-            filename = 'I-' + paper_id + '_ICLR2018_' \
+            filename = 'I-' + paper_id + '_ICLR' + YEAR + '_' \
                        + paper_author[0].split(' · ')[0] + '_' + paper_title + '.pdf'
             path = os.path.join(FILES_STORE, section_type)
             if os.path.exists(path) is False:

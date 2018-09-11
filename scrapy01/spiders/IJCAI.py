@@ -105,8 +105,14 @@ class IJCAIScrapy(scrapy.Spider):
         prefix_url = 'https://www.ijcai.org'
 
         for paper in papers:
-            title = re.search(r'<p>(.+?)/.+?<br>', paper).group(1)
-            author = re.search(r'<i>(.+)</i>', paper).group(1).split(',')[0].strip()
+            # print(paper.split('<br>')[0])
+            title = re.search(r'.+>(.+?)/.+', paper.split('<br>')[0]).group(1)
+            # print(title)
+            if '<' in title:
+                title = title.split('</i>')[-1]
+            # print('------------------------------')
+            # print(title)
+            author = re.search(r'<i>(.+)</i>', paper.split('<br>')[1]).group(1).split(',')[0].strip()
             opposite_url = re.search(r'<a href="(/Proceedings/[0-9]+/Papers/[0-9]+\.pdf)">PDF</a>', paper).group(1)
             url = prefix_url + opposite_url
 
@@ -119,13 +125,12 @@ class IJCAIScrapy(scrapy.Spider):
                        author + '_' \
                        + paper_title + '.pdf'
             filepath = os.path.join(FILES_STORE, filename)
-
             # print('==================  save paper as pdf file  ========================')
             try:
                 request.urlretrieve(url, filepath)
                 print(number, paper_title)
             except socket.timeout:
-                print('-----------  paper%s time out  -------------  skip  -----' % paper_number)
+                print('-----------  paper%s time out  -------------  skip  -----' % number)
 
 
         # ============================================

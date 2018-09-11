@@ -8,7 +8,7 @@ import scrapy
 
 socket.setdefaulttimeout(30)
 
-YEAR = '2017'
+YEAR = '2016'
 FILES_STORE = './scrapy01/emnlp' + YEAR
 
 
@@ -51,12 +51,17 @@ class ACLScrapy(scrapy.Spider):
                 if x in paper_title:
                     paper_title = paper_title.replace(x, ' ')
 
+            space_list = ['       ', '      ', '     ', '    ', '   ', '  ']
+            for x in space_list:
+                if x in paper_title:
+                    paper_title = paper_title.replace(x, ' ')
+
             filename = paper_number + 'EMNLP' + YEAR + '_' + \
                 paper_first_author + '_' + paper_title.strip() + '.pdf'
             filepath = os.path.join(FILES_STORE, filename)
             try:
                 request.urlretrieve(paper_url, filepath)
-                print(paper_number, paper_url, paper_title)
+                print(paper_number, paper_url, paper_title.strip())
             except socket.timeout:
                 print('---------  url time out: %s  ---------  skip  -------' % paper_url)
             except URLError:
