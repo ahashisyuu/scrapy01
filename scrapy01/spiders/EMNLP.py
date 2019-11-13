@@ -8,7 +8,7 @@ import scrapy
 
 socket.setdefaulttimeout(30)
 
-YEAR = '2016'
+YEAR = '2018'
 FILES_STORE = './scrapy01/emnlp' + YEAR
 
 

@@ -15,7 +15,7 @@ from scrapy.selector import HtmlXPathSelector, Selector
 
 from scrapy01.items import Scrapy01Item
 
-YEAR = '2016'
+YEAR = '2019'
 FILES_STORE = './scrapy01/aaai' + YEAR
 socket.setdefaulttimeout(30)
 
